@@ -9,6 +9,8 @@ use App\Models\Booking;
 use App\Models\Gallery;
 use App\Models\Contact;
 use App\Notifications\SendEmailNotification;
+use Illuminate\Support\Facades\Notification;
+
 class AdminController extends Controller
 {
     public function index()
@@ -20,7 +22,7 @@ class AdminController extends Controller
             if ($usertype == 'user') {
                 $room = Room::all();
                 $gallary = Gallery::all();
-                return view('home.index', compact('room','gallary'));
+                return view('home.index', compact('room', 'gallary'));
             } else if ($usertype == 'admin') {
                 return view('admin.index');
             } else {
@@ -184,29 +186,36 @@ class AdminController extends Controller
         return redirect()->back();
     }
 
-    public function all_message(){
+    public function all_message()
+    {
 
-    $data = Contact::all();
-        return view('admin.all_message',compact('data'));
+        $data = Contact::all();
+        return view('admin.all_message', compact('data'));
     }
 
 
-    public function send_mail(Request $request, $id){
+    public function send_mail(Request $request, $id)
+    {
 
         $data = Contact::find($id);
-        return view('admin.send_mail',compact('data'));
+        return view('admin.send_mail', compact('data'));
     }
 
-    public function mail($id){
-
+    public function mail(Request $request, $id)
+    {
 
         $data = Contact::find($id);
-        
-        $details =[
 
-
+        $details = [
+            'greeting' => $request->greeting,
+            'body' => $request->body,
+            'action_text' => $request->action_text,
+            'action_url' => $request->action_url,
+            'endline' => $request->endline,
         ];
 
+        Notification::send($data,new SendEmailNotification($details));
 
+        return redirect()->back();  
     }
 }
